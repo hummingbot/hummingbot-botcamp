@@ -1,6 +1,6 @@
 name: Script Design
 description: Use this template to create your Demo Day script
-title: "Script Design"
+title: "[Cohort #] | [Script Name]"
 labels: design
 body:
  - type: markdown

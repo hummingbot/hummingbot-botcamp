@@ -1,6 +1,6 @@
 name: Script Idea
 description: Use this template to provide a script idea for the Hummingbot community and future Botcamp students to build
-title: "Script Idea"
+title: "[Script Type] | [Script Name]"
 labels: idea
 body:
  - type: markdown
