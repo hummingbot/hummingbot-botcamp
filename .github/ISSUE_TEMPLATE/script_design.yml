@@ -88,14 +88,15 @@ body:
  - type: markdown
    attributes:
      value: |
-      ## Script Logic
-      Provide an image or link to a flowchart that describes the logic executed during the `on_tick` function.
-      Suggested tools: [Miro](https://miro.com/), [Lucidchart](https://www.lucidchart.com/pages/)
+      ## Flowchart
+      
+      * Flowchart that describes the logic executed during the `on_tick` function
+      * Each step in the flowchart should correspond to a line of code in the `on_tick` function.
+      * Suggested tools: [Miro](https://miro.com/), [Lucidchart](https://www.lucidchart.com/pages/)
 
  - type: textarea
    id: flowchart
    attributes:
-     label: Logic Flowchart
-     description: Provide an image or link to a flowchart that describes the logic executed during the `on_tick` function.
+     label: Flowchart Image
    validations:
      required: true

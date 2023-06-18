@@ -1,0 +1,50 @@
+name: Script Idea
+description: Use this template to provide a script idea for the Hummingbot community and future Botcamp students to build
+title: "Script Idea"
+labels: idea
+body:
+ - type: markdown
+   attributes:
+     value: |
+      ## Strategy Description
+
+ - type: textarea
+   id: type
+   attributes:
+     label: type
+     description: What type of strategy are you creating?
+     placeholder:  Market making, mean reversion, arbitrage, hedging, rebalancing, etc...
+   validations:
+     required: true
+
+ - type: textarea
+   id: environment
+   attributes:
+     label: environment
+     description: What assumptions are you making about market conditions that will allow this strategy to work?
+     placeholder: Market conditions, exchange used, transaction costs, target user, etc...
+   validations:
+     required: true
+
+ - type: textarea
+   id: description
+   attributes:
+     label: description
+     description: Describe how your script will work
+     placeholder: List each step that the script will take to execute the strategy
+   validations:
+     required: true
+
+ - type: markdown
+   attributes:
+     value: |
+      ## Flowchart
+      
+      * Flowchart that describes the logic executed during the `on_tick` function
+      * Each step in the flowchart should correspond to a line of code in the `on_tick` function.
+      * Suggested tools: [Miro](https://miro.com/), [Lucidchart](https://www.lucidchart.com/pages/)
+
+ - type: textarea
+   id: flowchart
+   attributes:
+     label: Flowchart Image
