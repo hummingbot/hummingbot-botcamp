@@ -1,3 +1,10 @@
+Botcamp students and others can this fork of the main Hummingbot repo to:
+
+* Design their scripts: Create an Issue using the Strategy Design template
+* Submit their scripts for Demo Day: Submit a Pull Request that contains your script and any dependencies
+* Submit script ideas for future Botcamp students: Create an Issue using the Script Request template
+
+----
 ![Hummingbot](https://i.ibb.co/X5zNkKw/blacklogo-with-text.png)
 
 ----
