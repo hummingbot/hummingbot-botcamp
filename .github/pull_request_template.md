@@ -1,16 +1,18 @@
-**Before submitting this PR, please make sure**:
+**Before submitting this script for review, please make sure**:
 
-- [ ] Your code builds clean without any errors or warnings
-- [ ] You are using approved title ("feat/", "fix/", "docs/", "refactor/")
+- [ ] Your code builds clean without Flake8 errors
+- [ ] You have provided a link to your Demo Day video
 
-**A description of the changes proposed in the pull request**:
+**Description**:
 
+* Describe what your script does
+* Add a link to your Script Design issue
 
+**Tips for Botcamp reviewers**
 
-**Tests performed by the developer**:
+What should reviewers test for?
 
+**Link to Demo Day video**
 
-
-**Tips for QA testing**:
-
+Add a link to a brief video that explains the rationale behind your script and shows it running. Suggested tool: [Loom](https://www.loom.com/)
 
