@@ -55,23 +55,19 @@ body:
      label: Inputs
      description: What are the variables that the user will need to define to run the script?
      value: |
-       1. 
-       2. 
-       3. 
-       4.
-       5.
+       - 
+       - 
+       - 
 
  - type: textarea
    id: status
    attributes:
-     label: `status` Command
+     label: Status Command
      description: What information should be displayed when you run the `status` command?
      value: |
-       1. 
-       2. 
-       3. 
-       4.
-       5.
+       - 
+       - 
+       - 
 
  - type: textarea
    id: events
@@ -79,11 +75,9 @@ body:
      label: Events and Responses
      description: What events does the script listen for and how does it respond to them?
      value: |
-       1. 
-       2. 
-       3. 
-       4.
-       5.
+       - 
+       - 
+       - 
 
  - type: markdown
    attributes:
