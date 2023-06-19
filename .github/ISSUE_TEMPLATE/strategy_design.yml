@@ -1,6 +1,6 @@
-name: Script Design
+name: Strategy Design Template
 description: Use this template to create your Demo Day script
-title: "[Cohort #] | [Script Name]"
+title: "[Cohort #] | YOUR SCRIPT NAME"
 labels: design
 body:
  - type: markdown
@@ -20,7 +20,7 @@ body:
  - type: textarea
    id: type
    attributes:
-     label: type
+     label: Strategy Type
      description: What type of strategy are you creating?
      placeholder:  Market making, mean reversion, arbitrage, hedging, rebalancing, etc...
    validations:
@@ -29,7 +29,7 @@ body:
  - type: textarea
    id: environment
    attributes:
-     label: environment
+     label: Environment
      description: What assumptions are you making about market conditions that will allow this strategy to work?
      placeholder: Market conditions, exchange used, transaction costs, target user, etc...
    validations:
@@ -38,7 +38,7 @@ body:
  - type: textarea
    id: description
    attributes:
-     label: description
+     label: Description
      description: Describe how your script will work
      placeholder: List each step that the script will take to execute the strategy
    validations:
@@ -50,7 +50,7 @@ body:
       ## Script Logic
 
  - type: textarea
-   id: inputs
+   id: Inputs
    attributes:
      label: Inputs
      description: What are the variables that the user will need to define to run the script?
@@ -64,7 +64,7 @@ body:
  - type: textarea
    id: status
    attributes:
-     label: Format Status
+     label: `status` Command
      description: What information should be displayed when you run the `status` command?
      value: |
        1. 
@@ -76,7 +76,7 @@ body:
  - type: textarea
    id: events
    attributes:
-     label: Events
+     label: Events and Responses
      description: What events does the script listen for and how does it respond to them?
      value: |
        1. 
@@ -97,6 +97,6 @@ body:
  - type: textarea
    id: flowchart
    attributes:
-     label: Flowchart Image
+     label: Strategic Logic
    validations:
      required: true
