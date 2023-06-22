@@ -31,10 +31,3 @@ body:
      label: Environment
      description: How are you running Hummingbot?
      placeholder: Mac (M1) Windows 11, Docker, Google Cloud, AWS, etc
-
- - type: textarea
-   id: attachment
-   attributes:
-     label: Attach Files
-     description: Attach any log files or config files that will help us answer your question
-     placeholder: [](url)
