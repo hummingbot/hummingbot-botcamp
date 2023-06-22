@@ -30,7 +30,7 @@ body:
    attributes:
      label: Environment
      description: How are you running Hummingbot?
-     placeholder: Mac (M1) Windows 11, Docker, Google Cloud, AWS, etc...
+     placeholder: Mac (M1) Windows 11, Docker, Google Cloud, AWS, etc
 
  - type: textarea
    id: attachment
