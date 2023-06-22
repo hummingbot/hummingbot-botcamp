@@ -1,0 +1,38 @@
+name: Office Hours Question
+description: Get your question answered during the next Botcamp Office Hours - questions will be answered in the order they are received
+title: "Office Hours Question"
+labels: question
+body:
+ - type: markdown
+   attributes:
+     value: |
+       ## Instructions
+       
+       * Fill out this template to get your question answered during the next Botcamp Office Hours
+       * Questions will be answered in the order they are received
+       * Provide as much detail as possible, including screenshots and error messages if applicable
+ - type: textarea
+   id: question
+   attributes:
+     label: Question
+     description: Describe your question in as much detail as possible
+   validations:
+     required: true
+
+ - type: input
+   id: design
+   attributes:
+     label: Strategy Design Template
+     description: Link to your Strategy Design Template
+
+ - type: textarea
+   id: environment
+   attributes:
+     label: Environment
+     description: How are you running Hummingbot?
+
+ - type: textarea
+   id: attachment
+   attributes:
+     label: Attach Files
+     description: Attach any log files or config files that will help us answer your question
