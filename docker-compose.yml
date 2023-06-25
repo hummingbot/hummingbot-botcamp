@@ -13,8 +13,8 @@ services:
       - ./data:/home/hummingbot/data
       - ./scripts:/home/hummingbot/scripts
     environment:
-      - CONFIG_PASSWORD=a
-      - CONFIG_FILE_NAME=directional_strategy_rsi.py
+      # - CONFIG_PASSWORD=a
+      # - CONFIG_FILE_NAME=simple_pmm_example.py
     logging:
       driver: "json-file"
       options:
@@ -24,10 +24,10 @@ services:
     stdin_open: true
     network_mode: host
 
-  dashboard:
-    container_name: dashboard
-    image: hummingbot/dashboard:latest
-    volumes:
-      - ./data:/home/dashboard/data
-    ports:
-      - "8501:8501"
+  # dashboard:
+  #   container_name: dashboard
+  #   image: hummingbot/dashboard:latest
+  #   volumes:
+  #     - ./data:/home/dashboard/data
+  #   ports:
+  #     - "8501:8501"
