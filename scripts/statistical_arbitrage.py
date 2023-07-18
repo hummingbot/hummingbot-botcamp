@@ -1,8 +1,8 @@
 from decimal import Decimal
 
-import numpy as np
 import pandas as pd
 import pandas_ta as ta
+import statsmodels.api as sm
 
 from hummingbot.core.data_type.common import PriceType, TradeType
 from hummingbot.data_feed.candles_feed.candles_factory import CandlesFactory
@@ -29,12 +29,12 @@ class StatisticalArbitrage(DirectionalStrategyBase):
     exchange: str = "binance_perpetual"
     order_amount_usd = Decimal("15")  # amount of order per side
     leverage = 10
-    length = 20
     max_executors = 2
     max_hours_to_hold_position = 24
+    length = 168  # length of spread/zscore calculation
     # candles parameters
     interval = "1h"
-    max_records = 50
+    max_records = 200
 
     # Configure the parameters for the position
     zscore_entry: int = -2
@@ -138,22 +138,27 @@ class StatisticalArbitrage(DirectionalStrategyBase):
 
         # all execution are only on the left side trading pair
         if z_score < self.zscore_entry or z_score > self.zscore_exit_sl:
-            return 1  # long 1
+            return 1
         elif z_score < self.zscore_entry_sl or z_score > self.zscore_exit:
-            return -1  # stop loss long  -1
+            return -1
         else:
             return 0
-        # return 1
 
     def get_processed_df(self):
-
         candles_df_1 = self.candles[0].candles_df
         candles_df_2 = self.candles[1].candles_df
 
         # calculate the spread and z-score based on the candles of 2 trading pairs
-        df = pd.merge(candles_df_1, candles_df_2, on="timestamp", how='inner', suffixes=('', '_2'))
-        hedge_ratio = np.corrcoef(df["close"][-self.length:], df["close_2"][-self.length:])[0, 1]
-        df["spread"] = df["close"] - (df["close_2"] * hedge_ratio)
+        df = pd.merge(candles_df_1, candles_df_2, on="timestamp", how='inner', suffixes=('_1', '_2'))
+        model = sm.OLS(df["close_1"], df["close_2"]).fit()
+
+        if model is not None and model.params is not None and len(model.params) > 0:
+            hedge_ratio = model.params[0]
+        else:
+            # Handle the case where model or model.params is None or empty
+            hedge_ratio = None  # or perform an alternative action
+
+        df["spread"] = df["close_1"] - (df["close_2"] * hedge_ratio)
         df["z_score"] = ta.zscore(df["spread"], length=self.length)
 
         return df
@@ -165,7 +170,7 @@ class StatisticalArbitrage(DirectionalStrategyBase):
             List[str]: A list of formatted strings containing market data information.
         """
         lines = []
-        columns_to_show = ["timestamp", "open", "low", "high", "close", "volume", "z_score", "close_2"]
+        columns_to_show = ["timestamp", "close_1", "close_2", "spread", "z_score"]
         candles_df = self.get_processed_df()
         lines.extend([f"Candles: {self.candles[0].name}-{self.candles[1].name} | Interval: {self.candles[0].interval}\n"])
         lines.extend(self.candles_formatted_list(candles_df, columns_to_show))
