@@ -16,11 +16,10 @@ class StatisticalArbitrage(DirectionalStrategyBase):
     BotCamp Cohort #5 July 2023
     Design Template: https://github.com/hummingbot/hummingbot-botcamp/issues/48
 
-    Description:
-    Statistical Arbitrage strategy implementation based on the DirectionalStrategyBase.
-    This strategy execute trades based on the Z-score values.
-    When z-score indicates an entry signal. the left side will execute a long position and right side will execute a short position.
-    When z-score indicates an exit signal. the left side will execute a short position and right side will execute a long position.
+    Description: Statistical Arbitrage strategy implementation based on the DirectionalStrategyBase. This strategy
+    execute trades based on the Z-score values. When z-score indicates an entry signal. the left side will execute a
+    long position and right side will execute a short position. When z-score indicates an exit signal. the left side
+    will execute a short position and right side will execute a long position.
     """
     directional_strategy_name: str = "statistical_arbitrage"
     # Define the trading pair and exchange that we want to use and the csv where we are going to store the entries
@@ -42,6 +41,9 @@ class StatisticalArbitrage(DirectionalStrategyBase):
     zscore_exit: int = 2
     zscore_exit_sl: int = 3
 
+    arbitrage_take_profit = Decimal("0.005")
+    arbitrage_stop_loss = Decimal("0.02")
+
     candles = [
         CandlesFactory.get_candle(connector=exchange,
                                   trading_pair=trading_pair,
@@ -52,62 +54,70 @@ class StatisticalArbitrage(DirectionalStrategyBase):
     ]
     on_going_arbitrage = False
     last_signal = 0
+    report_frequency_in_hours = 6
+    next_report_time = 0
     markets = {exchange: {trading_pair, trading_pair_2}}
 
     def on_tick(self):
+        self.check_and_send_report()
         self.clean_and_store_executors()
         if self.is_perpetual:
             self.check_and_set_leverage()
 
         if self.all_candles_ready:
             signal = self.get_signal()
-            if not self.on_going_arbitrage:
+            if len(self.active_executors) == 0:
                 position_configs = self.get_arbitrage_position_configs(signal)
                 if position_configs:
-                    self.on_going_arbitrage = True
+                    # self.on_going_arbitrage = True
                     self.last_signal = signal
                     for position_config in position_configs:
                         executor = PositionExecutor(strategy=self,
                                                     position_config=position_config)
                         self.active_executors.append(executor)
             else:
-                if (self.last_signal == 1 and signal == -1) or (self.last_signal == -1 and signal == 1):
+                consolidated_pnl = self.get_unrealized_pnl()
+                if consolidated_pnl > self.arbitrage_take_profit or consolidated_pnl < -self.arbitrage_stop_loss:
                     self.logger().info("Exit Arbitrage")
                     for executor in self.active_executors:
                         executor.early_stop()
-                    self.on_going_arbitrage = False
+                    # self.on_going_arbitrage = False
                     self.last_signal = 0
 
     def get_arbitrage_position_configs(self, signal):
         trading_pair_1_amount, trading_pair_2_amount = self.get_order_amounts()
         if signal == 1:
             buy_config = PositionConfig(
+                timestamp=self.current_timestamp,
                 trading_pair=self.trading_pair,
                 exchange=self.exchange,
                 side=TradeType.BUY,
                 amount=trading_pair_1_amount,
                 leverage=self.leverage,
-                time_limit=60 * 60 * self.max_hours_to_hold_position,
+                time_limit=int(60 * 60 * self.max_hours_to_hold_position),
             )
             sell_config = PositionConfig(
+                timestamp=self.current_timestamp,
                 trading_pair=self.trading_pair_2,
                 exchange=self.exchange,
                 side=TradeType.SELL,
                 amount=trading_pair_2_amount,
                 leverage=self.leverage,
-                time_limit=60 * 60 * self.max_hours_to_hold_position,
+                time_limit=int(60 * 60 * self.max_hours_to_hold_position),
             )
             return [buy_config, sell_config]
         elif signal == -1:
             buy_config = PositionConfig(
+                timestamp=self.current_timestamp,
                 trading_pair=self.trading_pair_2,
                 exchange=self.exchange,
                 side=TradeType.BUY,
                 amount=trading_pair_2_amount,
                 leverage=self.leverage,
-                time_limit=60 * 60 * self.max_hours_to_hold_position,
+                time_limit=int(60 * 60 * self.max_hours_to_hold_position),
             )
             sell_config = PositionConfig(
+                timestamp=self.current_timestamp,
                 trading_pair=self.trading_pair,
                 exchange=self.exchange,
                 side=TradeType.SELL,
@@ -118,12 +128,16 @@ class StatisticalArbitrage(DirectionalStrategyBase):
             return [buy_config, sell_config]
 
     def get_order_amounts(self):
-        base_quantized_1, usd_quantized_1 = self.get_order_amount_quantized_in_base_and_usd(self.trading_pair, self.order_amount_usd)
-        base_quantized_2, usd_quantized_2 = self.get_order_amount_quantized_in_base_and_usd(self.trading_pair_2, self.order_amount_usd)
+        base_quantized_1, usd_quantized_1 = self.get_order_amount_quantized_in_base_and_usd(self.trading_pair,
+                                                                                            self.order_amount_usd)
+        base_quantized_2, usd_quantized_2 = self.get_order_amount_quantized_in_base_and_usd(self.trading_pair_2,
+                                                                                            self.order_amount_usd)
         if usd_quantized_2 > usd_quantized_1:
-            base_quantized_2, usd_quantized_2 = self.get_order_amount_quantized_in_base_and_usd(self.trading_pair_2, usd_quantized_1)
+            base_quantized_2, usd_quantized_2 = self.get_order_amount_quantized_in_base_and_usd(self.trading_pair_2,
+                                                                                                usd_quantized_1)
         elif usd_quantized_1 > usd_quantized_2:
-            base_quantized_1, usd_quantized_1 = self.get_order_amount_quantized_in_base_and_usd(self.trading_pair, usd_quantized_2)
+            base_quantized_1, usd_quantized_1 = self.get_order_amount_quantized_in_base_and_usd(self.trading_pair,
+                                                                                                usd_quantized_2)
         return base_quantized_1, base_quantized_2
 
     def get_order_amount_quantized_in_base_and_usd(self, trading_pair: str, order_amount_usd: Decimal):
@@ -172,6 +186,33 @@ class StatisticalArbitrage(DirectionalStrategyBase):
         lines = []
         columns_to_show = ["timestamp", "close_1", "close_2", "spread", "z_score"]
         candles_df = self.get_processed_df()
-        lines.extend([f"Candles: {self.candles[0].name}-{self.candles[1].name} | Interval: {self.candles[0].interval}\n"])
+        distance_to_target = self.get_unrealized_pnl() - self.arbitrage_take_profit
+        lines.extend(
+            [
+                f"Consolidated PNL (%): {self.get_unrealized_pnl() * 100:.2f} | Target (%): {self.arbitrage_take_profit * 100:.2f} | Diff: {distance_to_target * 100:.2f}"],
+        )
+        lines.extend(
+            [f"Candles: {self.candles[0].name}-{self.candles[1].name} | Interval: {self.candles[0].interval}\n"])
         lines.extend(self.candles_formatted_list(candles_df, columns_to_show))
         return lines
+
+    def get_unrealized_pnl(self):
+        cum_pnl = 0
+        for executor in self.active_executors:
+            cum_pnl += executor.net_pnl
+        return cum_pnl
+
+    def get_realized_pnl(self):
+        cum_pnl = 0
+        for executor in self.stored_executors:
+            cum_pnl += executor.net_pnl
+        return cum_pnl
+
+    def check_and_send_report(self):
+        if self.current_timestamp > self.next_report_time:
+            self.notify_hb_app_with_timestamp(f"""
+Closed Positions: {len(self.stored_executors)} | Realized PNL (%): {self.get_realized_pnl() * 100:.2f}
+Open Positions: {len(self.active_executors)} | Unrealized PNL (%): {self.get_unrealized_pnl() * 100:.2f}
+"""
+                                              )
+            self.next_report_time = self.current_timestamp + 60 * 60 * self.report_frequency_in_hours
