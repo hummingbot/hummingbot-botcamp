@@ -28,21 +28,20 @@ class StatisticalArbitrage(DirectionalStrategyBase):
     exchange: str = "binance_perpetual"
     order_amount_usd = Decimal("15")  # amount of order per side
     leverage = 10
+    length = 168  # length of spread/zscore calculation
     max_executors = 2
     max_hours_to_hold_position = 24
-    length = 168  # length of spread/zscore calculation
-    # candles parameters
-    interval = "1h"
-    max_records = 200
 
     # Configure the parameters for the position
-    zscore_entry: int = -2
-    zscore_entry_sl: int = -3
-    zscore_exit: int = 2
-    zscore_exit_sl: int = 3
+    zscore_long_threshold: int = -1
+    zscore_short_threshold: int = 1
 
     arbitrage_take_profit = Decimal("0.005")
     arbitrage_stop_loss = Decimal("0.02")
+
+    # candles parameters
+    interval = "1m"
+    max_records = 200
 
     candles = [
         CandlesFactory.get_candle(connector=exchange,
@@ -52,7 +51,7 @@ class StatisticalArbitrage(DirectionalStrategyBase):
                                   trading_pair=trading_pair_2,
                                   interval=interval, max_records=max_records),
     ]
-    on_going_arbitrage = False
+
     last_signal = 0
     report_frequency_in_hours = 6
     next_report_time = 0
@@ -69,7 +68,6 @@ class StatisticalArbitrage(DirectionalStrategyBase):
             if len(self.active_executors) == 0:
                 position_configs = self.get_arbitrage_position_configs(signal)
                 if position_configs:
-                    # self.on_going_arbitrage = True
                     self.last_signal = signal
                     for position_config in position_configs:
                         executor = PositionExecutor(strategy=self,
@@ -81,7 +79,6 @@ class StatisticalArbitrage(DirectionalStrategyBase):
                     self.logger().info("Exit Arbitrage")
                     for executor in self.active_executors:
                         executor.early_stop()
-                    # self.on_going_arbitrage = False
                     self.last_signal = 0
 
     def get_arbitrage_position_configs(self, signal):
@@ -123,7 +120,7 @@ class StatisticalArbitrage(DirectionalStrategyBase):
                 side=TradeType.SELL,
                 amount=trading_pair_1_amount,
                 leverage=self.leverage,
-                time_limit=60 * 60 * self.max_hours_to_hold_position,
+                time_limit=int(60 * 60 * self.max_hours_to_hold_position),
             )
             return [buy_config, sell_config]
 
@@ -150,10 +147,9 @@ class StatisticalArbitrage(DirectionalStrategyBase):
         candles_df = self.get_processed_df()
         z_score = candles_df.iat[-1, -1]
 
-        # all execution are only on the left side trading pair
-        if z_score < self.zscore_entry or z_score > self.zscore_exit_sl:
+        if z_score < self.zscore_long_threshold:
             return 1
-        elif z_score < self.zscore_entry_sl or z_score > self.zscore_exit:
+        elif z_score > self.zscore_short_threshold:
             return -1
         else:
             return 0
