@@ -3,6 +3,7 @@ from typing import (
     TYPE_CHECKING,
 )
 from hummingbot.core.utils.async_utils import safe_ensure_future
+from scripts.ai_helper_concept import AiHelperConcept
 
 if TYPE_CHECKING:
     from hummingbot.client.hummingbot_application import HummingbotApplication
@@ -35,6 +36,9 @@ class SillyCommands:
             return True
         elif command == "dennis":
             safe_ensure_future(self.silly_dennis())
+            return True
+        elif command == "ai":
+            safe_ensure_future(self.proxyAiCommand(raw_command))
             return True
         else:
             return False
@@ -213,3 +217,13 @@ class SillyCommands:
             except Exception:
                 pass
         return f"{alert}" + ("\n" * 18)
+
+    async def proxyAiCommand(self, # type: HummingbotApplication
+                             raw_command: str):
+        self.app.log("")
+        self.app.log("thinking...")
+        self.app.log("")
+        self.app.log( "HUMMING AI: " + await AiHelperConcept.command_proxy(raw_command) )
+        self.app.log("")
+
+
